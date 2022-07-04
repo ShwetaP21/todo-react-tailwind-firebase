@@ -1,35 +1,41 @@
 import React,{useState} from 'react'
-import { useParams } from 'react-router-dom'
+
 import { useEffect } from 'react'
 import { db } from '../firebase'
 import {AiFillCheckCircle} from 'react-icons/ai'
 import {BsFillPencilFill} from 'react-icons/bs'
 import {ImBin} from 'react-icons/im'
-import UpdateToDo from './UpdateToDo'
+import { Link } from 'react-router-dom'
 
 const TodoList = () => {
-  const { id } = useParams();
+ 
   const[data,setData]=useState([])
   useEffect (()=>{
     loadData();
   },[])
 
-  const handleComplete=async(d)=>{
-    await db.collection("ToDo-List").doc(id).update({
-      completed: !d.completed
-  })
+  const handleDelete =async(did)=>{
+    await db.collection("ToDo-List").doc(did.toString()).delete()
+    window.location.reload()
+  }
+
+  const handleComplete = async (did) => {
+    await db.collection("ToDo-List").doc(did.toString()).update({
+      completed: true
+    })
       .then((res) => {
-          console.log(res);
-          window.alert(`"${res.data.title}" is updated`);
-          window.location.reload();
-          
+        console.log(res);
+        window.alert(`"${res.data.title}" is updated`);
+        window.location.reload();
+
       })
       .catch((err) => {
-          console.log(err);
-          alert("ToDo Completed")
-          window.location.reload();
+        console.log(err.message);
+        alert("ToDo Completed")
+        window.location.reload();
       });
   }
+
 
   const loadData=async()=>{
     await db.collection("ToDo-List").get()
@@ -50,21 +56,23 @@ const TodoList = () => {
       <> 
       <div className='py-3 px-2'>
       <div className=' w-[300px] h-[200px] bg-[#f0fdf4] shadow-xl flex g flex-col mx-4 md:mx-0 rounded-lg hover:scale-105 duration-200'>
-      <h1 className={`${!d.completed&&"line-through"} p-2 text-[#3f3f46] font-sans text-xl`}>{d.title}</h1>
+      <h1 className={`${d.completed && "line-through"} p-2 text-[#3f3f46] font-sans text-xl`}>{d.title}</h1>
       <p className='p-2 text-[#71717a] font-sans text-sm'>{d.description}</p>
       <div className='flex justify-center' >
       <div className='p-3'>
-      <button className='p-3 border border-gray-200 rounded-lg'>
-      <AiFillCheckCircle size={20} onClick={handleComplete}/>
+      <button onClick={() => handleComplete(d.id)} className='p-3 border border-gray-200 rounded-lg'>
+      <AiFillCheckCircle size={20} />
       </button>
       </div >
       <div className='p-3'>
       <button className='p-3 border border-gray-200 rounded-lg' >
-      <BsFillPencilFill  size={20} onClick={<UpdateToDo/>}/>
+        <Link to={`/update/${d.id}`}>
+      <BsFillPencilFill  size={20}/>
+        </Link>
       </button>
       </div>
       <div className='p-3'>
-      <button className='p-3 border border-gray-200 rounded-lg' >
+      <button className='p-3 border border-gray-200 rounded-lg' onClick={()=>{handleDelete(d.id)}} >
       <ImBin size={20}/>
       </button>
       </div>

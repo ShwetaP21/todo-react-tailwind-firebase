@@ -1,23 +1,31 @@
-import React from 'react'
+
+/* eslint-disable react-hooks/exhaustive-deps */
+import React,{useState} from 'react'
+import { useEffect } from 'react';
 import { useParams } from "react-router";
 import { useHistory } from 'react-router-dom';
-import Home from './Home';
+import Form from './../Components/Form';
 import { db } from '../firebase';
 
 const initialState ={
     title: '',
     description:'',
-    completed: false
 }
 
 const UpdateToDo = () => {
     const { id } = useParams();
     const [values, setValues] = useState(initialState);
     let history = useHistory();
+
     const handleChange = (e) => {
         setValues({ ...values, [e.target.name]: e.target.value });
     };
-    const retrive = async () => {
+
+    useEffect(() => {
+        retreive();
+    }, []);
+
+    const retreive = async () => {
         try {
             await db.collection('ToDo-List')
                 .doc(id)
@@ -48,22 +56,29 @@ const UpdateToDo = () => {
                 console.log(res);
                 window.alert(`"${res.data.Title}" is updated`);
                 window.location.reload();
-                history.push("/");
+               
             })
             .catch((err) => {
                 console.log(err);
                 alert("ToDo Updated")
+                history.push("/todo-list");
                 window.location.reload();
             });
     };
   return (
     <>
-    <Home 
+    <div className='w-full py-10 md:py-20'>
+    <div className='max-w-[1240] my-10 mx-auto'>
+      <h1 className='text-center font-serif font-semibold text-2xl md:text-3xl pt-3 pb-6 text-[#a3e635]'> Edit ToDo </h1>
+    
+    <Form
         handleSubmit={handleSubmit}
         handleChange={handleChange}
         setValues={setValues}
         values={values}
     />
+    </div>
+    </div>
     </>
   )
 }
